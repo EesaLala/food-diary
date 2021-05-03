@@ -1,49 +1,200 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+    <nav>
+      <div class="overview">
+        <div class="search">
+          <div class="inputs">
+            <input v-model="input" v-on:keyup="fetchSearch" type="text">
+            <ul class="searchList">
+              <li :class="searchArray.length != 0 ? 'searchLi searchLi-active' : 'searchLi'" v-for="item in searchArray" :key="item.id" @click="fetchCalories(item.id)">
+                {{ item.title }}
+              </li>
+             </ul>
+            <label>Select Meal:
+              <select v-model="mealChoice" name="meal">
+                <option value="breakfast">Breakfast</option>
+                <option value="lunch">Lunch</option>
+                <option value="dinner">Dinner</option>
+              </select>
+            </label>
+          </div>
+          
+          
+         
+        </div>
+        
+        <div class="cals goal">
+          <p> {{targetCalories}} </p>
+          <p>Target</p>
+        </div>
+        <div class="cals today">
+          <p> {{currentCalories}} </p>
+          <p>Today</p>
+        </div>
+        <div class="cals net">
+          <p :class="targetCalories - currentCalories > 0 ? 'positive' : 'negative'">
+            {{targetCalories - currentCalories}}
+          </p>
+          <p>Net</p>
+        </div>
+        <div class="canvas-holder">
+            <pie-chart v-if="chartData != null" :chart-data="chartData" :options="chartOptions"></pie-chart>
+        </div>
+      </div>
+      
+    </nav>
+    <div class="meals">
+      <div class="meal breakfast">
+        <div class="meal-heading">
+          <h3>Breakfast</h3>
+          <h4 v-if="breakfastTotal != 0">{{ breakfastTotal }} cals</h4>
+        </div>
+        
+        <p v-for="item in breakfastArray" :key="item.id">
+          {{ item.title }} {{ item.nutrition.calories }} 
+        </p>
+      </div>
+      <div class="meal lunch">
+        <div class="meal-heading">
+          <h3>Lunch</h3>
+          <h4 v-if="lunchTotal != 0">{{ lunchTotal }} cals</h4>
+        </div>
+        <p v-for="item in lunchArray" :key="item.id">
+          {{ item.title }} {{ item.nutrition.calories }} 
+        </p>
+      </div>
+      <div class="meal dinner">
+        <div class="meal-heading">
+          <h3>Dinner</h3>
+          <h4 v-if="dinnerTotal != 0">{{ dinnerTotal }} cals</h4>
+        </div>
+        <p v-for="item in dinnerArray" :key="item.id">
+          {{ item.title }} {{ item.nutrition.calories }} 
+        </p>
+      </div>
+      
+    </div>
+    
   </div>
 </template>
 
 <script>
+import PieChart from './pieChart.js'
+
 export default {
-  name: 'HelloWorld',
-  props: {
-    msg: String
+    components: {PieChart},
+    data() {
+      return {
+        input: "",
+        searchArray: [],
+        calories: "",
+        breakfastArray: [],
+        lunchArray: [],
+        dinnerArray: [],
+        breakfastTotal: 0,
+        lunchTotal: 0,
+        dinnerTotal: 0,
+        carbs: 0,
+        protein: 0,
+        fat: 0,
+        mealChoice: "",
+        targetCalories: 2000,
+        currentCalories: 0,
+        chartOptions: {
+            responsive: true,
+            plugins: {
+              legend: {
+                display: false,
+              }
+            }
+          },
+        chartData: null,
+    
+      }
+    },
+    methods: {
+      fetchSearch() {
+        if (this.input.length > 3) {
+          let api = `https://api.spoonacular.com/food/menuItems/search?query=${this.input}&number=5&apiKey=2ce90c069d8043aeadcf789227296dd1`
+          fetch(api)
+            .then(res => {
+              return res.json()
+            })
+            .then(data => {
+              console.log(data)
+              this.searchArray = data.menuItems
+            })
+        }
+        
+      },
+      fetchCalories(id) {
+        if (this.input.length > 3) {
+          let api = `https://api.spoonacular.com/food/menuItems/${id}?apiKey=2ce90c069d8043aeadcf789227296dd1`
+          fetch(api)
+            .then(res => {
+              return res.json()
+            })
+            .then(data => {
+              console.log(data)
+              this.carbs += parseInt(data.nutrition.carbs)
+              this.protein += parseInt(data.nutrition.protein)
+              this.fat += parseInt(data.nutrition.fat)
+              this.populateChart()
+              if(this.mealChoice === "breakfast") {
+                this.breakfastArray.push(data)
+                this.currentCalories += data.nutrition.calories
+                this.breakfastTotal += data.nutrition.calories
+              }
+              if(this.mealChoice === "lunch") {
+                this.lunchArray.push(data)
+                this.currentCalories += data.nutrition.calories
+                this.lunchTotal += data.nutrition.calories
+              }
+              if(this.mealChoice === "dinner") {
+                this.dinnerArray.push(data)
+                this.currentCalories += data.nutrition.calories
+                this.dinnerTotal += data.nutrition.calories
+              }
+              
+            })
+        }
+        
+      },
+      populateChart() {
+        this.chartData = {
+          hoverBackgroundColor: "red",
+          hoverBorderWidth: 10,
+          labels: ["Carbs", "Protein", "Fat"],
+          datasets: [
+            {
+              label: "Data One",
+              backgroundColor: ["#41B883", "#E46651", "#00D8FF"],
+              data: [this.carbs, this.protein, this.fat]
+            }
+          ]
+        }
+        
+      }
+      
+    },
+    mounted: {
+      chart() {
+        this.populateChart()
+    }
   }
 }
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
+.hello {
+  padding: 20px;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 2fr 3fr;
 }
+
 ul {
   list-style-type: none;
   padding: 0;
@@ -54,5 +205,72 @@ li {
 }
 a {
   color: #42b983;
+}
+
+.meals {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  margin-top: 10px;
+  gap: 20px;
+}
+
+.meal p {
+  margin-top: 5px;  
+}
+
+.meal-heading {
+  background-color:rgb(25, 89, 207);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.searchList{
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  z-index: 10;
+}
+
+.searchLi{
+  transform: translateY(-110%);
+}
+
+.searchLi-active{
+  transform: translateY(0%);
+  transition: transform 0.2s ease;
+}
+
+.overview {
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 0.5fr 0.5fr 0.5fr 2fr;
+  align-items: center;
+  justify-content: center;
+}
+
+.canvas-holder {
+  width: 200px;
+  
+}
+
+.search {
+  display: flex;
+  align-items: center;
+}
+
+.inputs {
+  align-self: flex-start;
+}
+
+.positive {
+  color: #41B883;
+}
+
+.negative {
+  color: #e7462a;
 }
 </style>
