@@ -4,7 +4,7 @@
       <div class="overview">
         <div class="search">
           <div class="inputs">
-            <input v-model="input" v-on:keyup="fetchSearch" type="text">
+            <input v-model="input" class="food-input" v-on:keyup="fetchSearch" type="text">
             <ul class="searchList">
               <li :class="searchArray.length != 0 ? 'searchLi searchLi-active' : 'searchLi'" v-for="item in searchArray" :key="item.id" @click="fetchCalories(item.id)">
                 {{ item.title }}
@@ -29,7 +29,7 @@
           <p>Target</p>
         </div>
         <div class="cals-today">
-          <h4> {{currentCalories}} </h4>
+          <h4 class="net-cals"> {{currentCalories}} </h4>
           <p>Today</p>
         </div>
         <div class="cals-net">
