@@ -10,10 +10,10 @@
   "dependencies": {
     "chart.js": "^2.7.2",
     "core-js": "^3.6.5",
+    "firebase": "^8.4.3",
+    "firebase-tools": "^9.1.0",
     "vue": "^2.6.11",
-    "vue-chartjs": "^3.2.1",
-    "firebase": "^8.2.1",
-    "firebase-tools": "^9.1.0"
+    "vue-chartjs": "^3.2.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",

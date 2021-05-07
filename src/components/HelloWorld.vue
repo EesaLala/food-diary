@@ -23,22 +23,25 @@
          
         </div>
         
-        <div class="cals goal">
-          <p> {{targetCalories}} </p>
+        <div class="numbers">
+          <div class="cals-goal">
+          <h4> {{targetCalories}} </h4>
           <p>Target</p>
         </div>
-        <div class="cals today">
-          <p> {{currentCalories}} </p>
+        <div class="cals-today">
+          <h4> {{currentCalories}} </h4>
           <p>Today</p>
         </div>
-        <div class="cals net">
-          <p :class="targetCalories - currentCalories > 0 ? 'positive' : 'negative'">
+        <div class="cals-net">
+          <h4 :class="targetCalories - currentCalories > 0 ? 'positive' : 'negative'">
             {{targetCalories - currentCalories}}
-          </p>
+          </h4>
           <p>Net</p>
         </div>
+        </div>
+        
         <div class="canvas-holder">
-            <pie-chart v-if="chartData != null" :chart-data="chartData" :options="chartOptions"></pie-chart>
+            <pie-chart class="chart" v-if="chartData != null" :chart-data="chartData" :options="chartOptions"></pie-chart>
         </div>
       </div>
       
@@ -47,6 +50,7 @@
       <div class="meal breakfast">
         <div class="meal-heading">
           <h3>Breakfast</h3>
+          <button @click="time">test</button>
           <h4 v-if="breakfastTotal != 0">{{ breakfastTotal }} cals</h4>
         </div>
         
@@ -80,6 +84,7 @@
 
 <script>
 import PieChart from './pieChart.js'
+import firebase from 'firebase'
 
 export default {
     components: {PieChart},
@@ -97,7 +102,7 @@ export default {
         carbs: 0,
         protein: 0,
         fat: 0,
-        mealChoice: "",
+        mealChoice: "breakfast",
         targetCalories: 2000,
         currentCalories: 0,
         chartOptions: {
@@ -174,6 +179,9 @@ export default {
           ]
         }
         
+      },
+      time() {
+        console.log(firebase.firestore.Timestamp)
       }
       
     },
@@ -207,6 +215,28 @@ a {
   color: #42b983;
 }
 
+.numbers {
+  padding: 0 20px;
+}
+
+.numbers p {
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.6;
+  margin: 5px 0;
+}
+
+.numbers h4 {
+  text-align: center;
+  margin-top: 5px;
+  opacity: 0.9;
+}
+
+.cals-net h4 {
+  font-size: 18px;
+  opacity: 1;
+}
+
 .meals {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -233,11 +263,18 @@ a {
   flex-direction: column;
   position: absolute;
   z-index: 10;
+  width: 30%;
 }
 
 .searchLi{
   transform: translateY(-110%);
 }
+
+.searchLi:hover{
+  cursor: pointer;
+  background-color: lightsteelblue;
+}
+
 
 .searchLi-active{
   transform: translateY(0%);
@@ -247,15 +284,17 @@ a {
 .overview {
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 2fr 0.5fr 0.5fr 0.5fr 2fr;
-  align-items: center;
-  justify-content: center;
+  grid-template-columns: 2fr 1fr 2fr;
+  /* align-items: center;
+  justify-content: center; */
 }
 
 .canvas-holder {
   width: 200px;
-  
+  margin: 0 auto;
 }
+
+
 
 .search {
   display: flex;
@@ -264,6 +303,7 @@ a {
 
 .inputs {
   align-self: flex-start;
+  padding-top: 10px;
 }
 
 .positive {
