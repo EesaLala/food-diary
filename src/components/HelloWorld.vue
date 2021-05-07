@@ -50,7 +50,6 @@
       <div class="meal breakfast">
         <div class="meal-heading">
           <h3>Breakfast</h3>
-          <button @click="time">test</button>
           <h4 v-if="breakfastTotal != 0">{{ breakfastTotal }} cals</h4>
         </div>
         
